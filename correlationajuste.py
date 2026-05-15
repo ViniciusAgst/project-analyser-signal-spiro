@@ -319,27 +319,50 @@ def analyze_csvs(
     )
 
     # =====================================================
-    # BLAND ALTMAN (MINUTO CENTRAL)
+    # BLAND ALTMAN FLUXO (MINUTO CENTRAL)
     # =====================================================
-    media = (
-                    s_device_calibrado
-                    + s_powerlab_central
-            ) / 2
+    media_fluxo = (
+            s_device_calibrado
+            + s_powerlab_central
+    ) / 2
 
-    diferenca = (
+    diferenca_fluxo = (
             s_device_calibrado
             - s_powerlab_central
     )
 
-    bias = np.mean(diferenca)
+    bias_fluxo = np.mean(diferenca_fluxo)
 
-    std_diff = np.std(
-        diferenca,
+    std_fluxo = np.std(
+        diferenca_fluxo,
         ddof=1
     )
 
-    loa_superior = bias + 1.96 * std_diff
-    loa_inferior = bias - 1.96 * std_diff
+    loa_superior_fluxo = bias_fluxo + 1.96 * std_fluxo
+    loa_inferior_fluxo = bias_fluxo - 1.96 * std_fluxo
+
+    # =====================================================
+    # BLAND ALTMAN VOLUME (MINUTO CENTRAL)
+    # =====================================================
+    media_volume = (
+            v_device_calibrado
+            + v_powerlab_central
+    ) / 2
+
+    diferenca_volume = (
+            v_device_calibrado
+            - v_powerlab_central
+    )
+
+    bias_volume = np.mean(diferenca_volume)
+
+    std_volume = np.std(
+        diferenca_volume,
+        ddof=1
+    )
+
+    loa_superior_volume = bias_volume + 1.96 * std_volume
+    loa_inferior_volume = bias_volume - 1.96 * std_volume
 
     # =====================================================
     # MÉTRICAS (MINUTO CENTRAL)
@@ -371,12 +394,19 @@ def analyze_csvs(
         v_device_calibrado,
         v_powerlab_central,
 
-        media,
-        diferenca,
+        media_fluxo,
+        diferenca_fluxo,
 
-        bias,
-        loa_superior,
-        loa_inferior,
+        bias_fluxo,
+        loa_superior_fluxo,
+        loa_inferior_fluxo,
+
+        media_volume,
+        diferenca_volume,
+
+        bias_volume,
+        loa_superior_volume,
+        loa_inferior_volume,
 
         rmse,
         mae,
@@ -809,20 +839,25 @@ class App:
             )
 
             (
-                tempo_sync,
+                tempo_central,
 
                 s_device_calibrado,
-                s_powerlab_sync,
+                s_powerlab_central,
                 
                 v_device_calibrado,
-                v_powerlab_sync,
+                v_powerlab_central,
 
-                media,
-                diferenca,
+                media_fluxo,
+                diferenca_fluxo,
+                bias_fluxo,
+                loa_superior_fluxo,
+                loa_inferior_fluxo,
 
-                bias,
-                loa_superior,
-                loa_inferior,
+                media_volume,
+                diferenca_volume,
+                bias_volume,
+                loa_superior_volume,
+                loa_inferior_volume,
 
                 rmse,
                 mae,
@@ -840,16 +875,21 @@ class App:
             
             # Armazenar dados para update_plot
             self.current_results = {
-                "tempo_sync": tempo_sync,
+                "tempo_central": tempo_central,
                 "s_device_calibrado": s_device_calibrado,
-                "s_powerlab_sync": s_powerlab_sync,
+                "s_powerlab_central": s_powerlab_central,
                 "v_device_calibrado": v_device_calibrado,
-                "v_powerlab_sync": v_powerlab_sync,
-                "media": media,
-                "diferenca": diferenca,
-                "bias": bias,
-                "loa_superior": loa_superior,
-                "loa_inferior": loa_inferior,
+                "v_powerlab_central": v_powerlab_central,
+                "media_fluxo": media_fluxo,
+                "diferenca_fluxo": diferenca_fluxo,
+                "bias_fluxo": bias_fluxo,
+                "loa_superior_fluxo": loa_superior_fluxo,
+                "loa_inferior_fluxo": loa_inferior_fluxo,
+                "media_volume": media_volume,
+                "diferenca_volume": diferenca_volume,
+                "bias_volume": bias_volume,
+                "loa_superior_volume": loa_superior_volume,
+                "loa_inferior_volume": loa_inferior_volume,
                 "rmse": rmse,
                 "mae": mae,
                 "corrcoef": corrcoef,
@@ -887,16 +927,21 @@ class App:
         data = self.current_results
         
         # Extrair dados
-        tempo_sync = data["tempo_sync"]
+        tempo_sync = data["tempo_central"]
         s_device_calibrado = data["s_device_calibrado"]
-        s_powerlab_sync = data["s_powerlab_sync"]
+        s_powerlab_sync = data["s_powerlab_central"]
         v_device_calibrado = data["v_device_calibrado"]
-        v_powerlab_sync = data["v_powerlab_sync"]
-        media = data["media"]
-        diferenca = data["diferenca"]
-        bias = data["bias"]
-        loa_superior = data["loa_superior"]
-        loa_inferior = data["loa_inferior"]
+        v_powerlab_sync = data["v_powerlab_central"]
+        media_fluxo = data["media_fluxo"]
+        diferenca_fluxo = data["diferenca_fluxo"]
+        bias_fluxo = data["bias_fluxo"]
+        loa_superior_fluxo = data["loa_superior_fluxo"]
+        loa_inferior_fluxo = data["loa_inferior_fluxo"]
+        media_volume = data["media_volume"]
+        diferenca_volume = data["diferenca_volume"]
+        bias_volume = data["bias_volume"]
+        loa_superior_volume = data["loa_superior_volume"]
+        loa_inferior_volume = data["loa_inferior_volume"]
         rmse = data["rmse"]
         mae = data["mae"]
         corrcoef = data["corrcoef"]
@@ -907,6 +952,19 @@ class App:
         delay = data["delay"]
         
         plot_type = self.plot_type.get()
+
+        if plot_type == "fluxo":
+            media = media_fluxo
+            diferenca = diferenca_fluxo
+            bias = bias_fluxo
+            loa_superior = loa_superior_fluxo
+            loa_inferior = loa_inferior_fluxo
+        else:
+            media = media_volume
+            diferenca = diferenca_volume
+            bias = bias_volume
+            loa_superior = loa_superior_volume
+            loa_inferior = loa_inferior_volume
         
         # =================================================
         # LIMPAR
@@ -1088,6 +1146,12 @@ class App:
             color="white",
             label=f"Bias = {bias:.2f}"
         )
+
+# Ajusta o tamanho do eixo Y do Bland-Altman
+        if plot_type == "fluxo":
+            ax2.set_ylim(-5, 5)
+        else:
+            ax2.set_ylim(loa_inferior - 10, loa_superior + 10)
 
         ax2.axhline(
             loa_superior,
